@@ -4,27 +4,20 @@ from discord.ext import commands
 import datetime
 import random
 from dotenv import load_dotenv
-
-# THAY ĐỔI 1: Import thư viện mới của Google
 from google import genai
-
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GEMINI_API_KEY = os.getenv('GEMINI_KEY')
 
-# 1. Khởi tạo Intents (Cực kỳ quan trọng để dùng on_member_join)
+# Khởi tạo Intents
 intents = discord.Intents.default()
-intents.members = True  # Để nhận diện người mới vào
-intents.message_content = True  # Để đọc lệnh !prefix
-
-# 2. Khởi tạo Bot và tắt lệnh help mặc định để không bị lỗi xung đột
+intents.members = True
+intents.message_content = True  # đọc lệnh !prefxi
 bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
-
-# THAY ĐỔI 2: Khởi tạo AI Client theo chuẩn mới
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-# --- SỰ KIỆN (EVENTS) ---
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -36,9 +29,9 @@ async def on_message(message):
         if user_prompt:
             async with message.channel.typing():
                 try:
-                    # THAY ĐỔI 3: Gọi AI bằng cú pháp của thư viện mới
+
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash', # Sử dụng bản 2.0 flash miễn phí và cực ổn định
+                        model='gemini-2.5-flash',
                         contents=user_prompt
                     )
 
@@ -57,7 +50,7 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f'Đã đăng nhập thành công: {bot.user.name}')
-    # Hiển thị trạng thái trên Discord cho mọi người thấy
+    # Hiển thị trạng thái trên Discord
     await bot.change_presence(activity=discord.Game(name="Dùng !help để xem lệnh"))
 
 
@@ -74,8 +67,7 @@ async def on_member_join(member):
         await channel.send(embed=embed)
 
 
-# --- LỆNH (COMMANDS) ---
-# Lệnh Đuổi Thành Viên (Kick)
+
 @bot.command()
 @commands.has_permissions(kick_members=True)
 async def kick(ctx, member: discord.Member, *, reason="Không có lý do"):
@@ -86,7 +78,7 @@ async def kick(ctx, member: discord.Member, *, reason="Không có lý do"):
         await ctx.send(f"Không thể đuổi người này: {e}")
 
 
-# Lệnh Cấm Thành Viên (Ban)
+
 @bot.command()
 @commands.has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason="Không có lý do"):
@@ -97,26 +89,26 @@ async def ban(ctx, member: discord.Member, *, reason="Không có lý do"):
         await ctx.send(f"Không thể cấm người này: {e}")
 
 
-# Lệnh Gỡ Cấm (Unban)
+
 @bot.command()
 @commands.has_permissions(ban_members=True)
 async def unban(ctx, *, member_name):
     try:
-        # Lấy danh sách những người đang bị ban trong server
+
         banned_users = [entry async for entry in ctx.guild.bans()]
 
-        # Tìm người có tên (hoặc tag) khớp với tên bạn nhập
+
         for ban_entry in banned_users:
             user = ban_entry.user
             if (f"{user.name}#{user.discriminator}" == member_name) or (user.name == member_name):
                 await ctx.guild.unban(user)
-                await ctx.send(f"🔓 Đã gỡ cấm cho **{user.name}**. Chào mừng quay trở lại!")
+                await ctx.send(f" Đã gỡ cấm cho **{user.name}**. Chào mừng quay trở lại!")
                 return
 
-        await ctx.send(f"❌ Không tìm thấy ai tên `{member_name}` trong danh sách bị ban.")
+        await ctx.send(f"Không tìm thấy ai tên `{member_name}` trong danh sách bị ban.")
 
     except Exception as e:
-        await ctx.send(f"❌ Lỗi gỡ cấm: {e}")
+        await ctx.send(f" Lỗi gỡ cấm: {e}")
 
 
 @bot.command()
@@ -198,7 +190,7 @@ async def meme(ctx):
         await ctx.send("Kho meme đang trống")
         return
 
-    # Chọn ngẫu nhiên 1 link
+    #random link
     meme_url = random.choice(list_meme)
 
     embed = discord.Embed(
@@ -228,14 +220,14 @@ async def mingking(ctx):
 async def saygex(ctx):
     video_folder = r"C:\Users\Admin\Videos\SayGex4botdiscord"
     try:
-        # Lấy danh sách video
+
         all_videos = [f for f in os.listdir(video_folder) if f.endswith(('.mp4', '.mov', '.mkv'))]
 
         if not all_videos:
             await ctx.send("Thư mục không có video")
             return
 
-        # Các dòng dưới đây phải thụt lề vào trong khối try
+
         random_video = random.choice(all_videos)
         video_path = os.path.join(video_folder, random_video)
 
@@ -249,5 +241,5 @@ async def saygex(ctx):
         await ctx.send(f"Có lỗi xảy ra: {e}")
 
 
-# --- CHẠY BOT ---
+
 bot.run(TOKEN)
