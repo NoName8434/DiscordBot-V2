@@ -217,7 +217,7 @@ async def mingking(ctx):
 
 
 @bot.command()
-async def saygex(ctx):
+async def video(ctx):
     video_folder = r"C:\Users\Admin\Videos\SayGex4botdiscord"
     try:
 
